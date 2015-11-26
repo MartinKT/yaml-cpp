@@ -106,8 +106,7 @@ Node Load(std::istream& input, bool managed) {
       return Node();
 
     return builder.Root();
-  }
-  catch (Exception e) {
+  } catch (Exception e) {
     if (managed) {
       ElegantErrorOutput(e, parser);
     }
@@ -120,28 +119,37 @@ Node LoadFile(const std::string& filename, bool managed) {
   std::ifstream fin(filename.c_str());
   if (!fin)
     throw BadFile();
-  return Load(fin);
+  return Load(fin, managed);
 }
 
 std::vector<Node> LoadAll(const std::string& input, bool managed) {
   std::stringstream stream(input);
-  return LoadAll(stream);
+  return LoadAll(stream, managed);
 }
 
 std::vector<Node> LoadAll(const char* input, bool managed) {
   std::stringstream stream(input);
-  return LoadAll(stream);
+  return LoadAll(stream, managed);
 }
 
 std::vector<Node> LoadAll(std::istream& input, bool managed) {
   std::vector<Node> docs;
 
-  Parser parser(input);
-  while (1) {
-    NodeBuilder builder;
-    if (!parser.HandleNextDocument(builder))
-      break;
-    docs.push_back(builder.Root());
+  Parser parser(input, managed);
+
+  try{
+    while (1) {
+      NodeBuilder builder;
+      if (!parser.HandleNextDocument(builder))
+        break;
+      docs.push_back(builder.Root());
+    }
+  } catch (Exception e) {
+    if (managed) {
+      ElegantErrorOutput(e, parser);
+    }
+
+    throw e;
   }
 
   return docs;
@@ -151,6 +159,6 @@ std::vector<Node> LoadAllFromFile(const std::string& filename, bool managed) {
   std::ifstream fin(filename.c_str());
   if (!fin)
     throw BadFile();
-  return LoadAll(fin);
+  return LoadAll(fin, managed);
 }
 }
