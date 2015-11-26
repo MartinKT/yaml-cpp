@@ -7,8 +7,8 @@
 #include "yaml-cpp/exceptions.h"  // IWYU pragma: keep
 
 namespace YAML {
-Scanner::Scanner(std::istream& in)
-    : INPUT(in),
+Scanner::Scanner(std::istream& in, bool textEnabled)
+    : INPUT(in, textEnabled),
       m_startedStream(false),
       m_endedStream(false),
       m_simpleKeyAllowed(false),
@@ -52,6 +52,10 @@ Token& Scanner::peek() {
 // mark
 // . Returns the current mark in the stream
 Mark Scanner::mark() const { return INPUT.mark(); }
+
+std::string Scanner::text() const {
+    return INPUT.text();
+}
 
 // EnsureTokensInQueue
 // . Scan until there's a valid token at the front of the queue,

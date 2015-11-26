@@ -26,7 +26,7 @@ class RegEx;
 
 class Scanner {
  public:
-  Scanner(std::istream &in);
+  Scanner(std::istream &in, bool textEnabled = false);
   ~Scanner();
 
   // token queue management (hopefully this looks kinda stl-ish)
@@ -34,6 +34,7 @@ class Scanner {
   void pop();
   Token &peek();
   Mark mark() const;
+  std::string text() const;
 
  private:
   struct IndentMarker {

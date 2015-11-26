@@ -13,7 +13,7 @@ class EventHandler;
 
 Parser::Parser() {}
 
-Parser::Parser(std::istream& in) { Load(in); }
+Parser::Parser(std::istream& in, bool textEnabled) { Load(in, textEnabled); }
 
 Parser::~Parser() {}
 
@@ -21,9 +21,13 @@ Parser::operator bool() const {
   return m_pScanner.get() && !m_pScanner->empty();
 }
 
-void Parser::Load(std::istream& in) {
-  m_pScanner.reset(new Scanner(in));
+void Parser::Load(std::istream& in, bool textEnabled) {
+  m_pScanner.reset(new Scanner(in, textEnabled));
   m_pDirectives.reset(new Directives);
+}
+
+std::string Parser::GetText() const {
+    return m_pScanner->text();
 }
 
 // HandleNextDocument

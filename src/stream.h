@@ -21,7 +21,7 @@ class Stream : private noncopyable {
  public:
   friend class StreamCharSource;
 
-  Stream(std::istream& input);
+  Stream(std::istream& input, bool textEnabled = false);
   ~Stream();
 
   operator bool() const;
@@ -31,6 +31,7 @@ class Stream : private noncopyable {
   char get();
   std::string get(int n);
   void eat(int n = 1);
+  std::string text() const;
 
   static char eof() { return 0x04; }
 
@@ -47,6 +48,9 @@ class Stream : private noncopyable {
   Mark m_mark;
 
   CharacterSet m_charSet;
+  bool m_bTextEnabled;
+  mutable std::string  m_text;
+
   mutable std::deque<char> m_readahead;
   unsigned char* const m_pPrefetched;
   mutable size_t m_nPrefetchedAvailable;

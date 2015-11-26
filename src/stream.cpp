@@ -3,7 +3,8 @@
 #include "stream.h"
 
 #ifndef YAML_PREFETCH_SIZE
-#define YAML_PREFETCH_SIZE 2048
+#define YAML_PREFETCH_SIZE 2047
+#define YAML_PREFETCH_BUFF_SIZE (YAML_PREFETCH_SIZE + 1)
 #endif
 
 #define S_ARRAY_SIZE(A) (sizeof(A) / sizeof(*(A)))
@@ -190,9 +191,10 @@ inline void QueueUnicodeCodepoint(std::deque<char>& q, unsigned long ch) {
   }
 }
 
-Stream::Stream(std::istream& input)
+Stream::Stream(std::istream& input, bool textEnabled)
     : m_input(input),
-      m_pPrefetched(new unsigned char[YAML_PREFETCH_SIZE]),
+      m_bTextEnabled(textEnabled),
+      m_pPrefetched(new unsigned char[YAML_PREFETCH_BUFF_SIZE]),
       m_nPrefetchedAvailable(0),
       m_nPrefetchedUsed(0) {
   typedef std::istream::traits_type char_traits;
@@ -290,6 +292,10 @@ std::string Stream::get(int n) {
 void Stream::eat(int n) {
   for (int i = 0; i < n; i++)
     get();
+}
+
+std::string Stream::text() const {
+    return m_text;
 }
 
 void Stream::AdvanceCurrent() {
@@ -417,6 +423,11 @@ unsigned char Stream::GetNextByte() const {
 
     if (0 == m_nPrefetchedAvailable) {
       return 0;
+    }
+
+    if (m_bTextEnabled) {
+      ReadBuffer(m_pPrefetched)[m_nPrefetchedAvailable] = 0;
+      m_text += ReadBuffer(m_pPrefetched);
     }
   }
 

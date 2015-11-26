@@ -23,15 +23,16 @@ struct Token;
 class YAML_CPP_API Parser : private noncopyable {
  public:
   Parser();
-  Parser(std::istream& in);
+  Parser(std::istream& in, bool textEnabled = false);
   ~Parser();
 
   operator bool() const;
 
-  void Load(std::istream& in);
+  void Load(std::istream& in, bool textEnabled = false);
   bool HandleNextDocument(EventHandler& eventHandler);
 
   void PrintTokens(std::ostream& out);
+  std::string GetText() const;
 
  private:
   void ParseDirectives();
