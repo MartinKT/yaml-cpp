@@ -11,12 +11,15 @@
 #include "nodebuilder.h"
 
 #include <iostream>
+#include <algorithm>
 
 #ifdef _WIN32
 #include <Windows.h>
 #else
 #include <ioctl.h>
 #endif
+
+#define LINE_MAKER_SIZE 10
 
 namespace YAML {
 
@@ -49,6 +52,7 @@ int GetConsoleWidth() {
 void ElegantErrorOutput(Exception &exception, Parser &parser) {
   std::string text = parser.GetText();
   int consoleWidth = GetConsoleWidth();
+  int maxContextSize = consoleWidth - LINE_MAKER_SIZE - 5;
 
   std::string errorMark;
   errorMark += colors::red("error").bold();
@@ -57,33 +61,52 @@ void ElegantErrorOutput(Exception &exception, Parser &parser) {
     << errorMark << ": " << exception.msg << std::endl;
 
   // Find the first element of that line. Unless it is too faraway.
-  int rpos = exception.mark.pos;
-  for (int i = 0, linesCount = 0; i < consoleWidth/2; i++) {
+  int rpos = exception.mark.pos, actualLines = 1;
+  for (int i = 0; i < maxContextSize; i++) {
     rpos = exception.mark.pos - i;
     if (rpos <= 0) break;
 
     if (text[rpos] == '\n') {
+      if(actualLines == 1) {
+        // Nothing is here, it is because of it points to an empty line.
+        actualLines++;
+        continue; // continue to next line.
+      }
       rpos++;
       break;
     }
   }
 
   std::string context;
-  for (int j = rpos, count = 0;j < text.size() && count < consoleWidth; j++) {
-    context += text[j];
+  if (rpos > 0 && text[rpos - 1] != '\n')
+    context += " ...";
 
-    if (text[j] == '\n')
-      count = 0;
-    else
-      count++;
+  for (int j = rpos, columnCount = 0, linesCount = 1; j < text.size(); j++) {
+    if (text[j] == '\n'){
+      columnCount = 0;
+      linesCount++;
+    } else
+      columnCount++;
+
+    if (linesCount > actualLines) {
+      break;
+    }
+    
+    if (columnCount >= consoleWidth - LINE_MAKER_SIZE - 1) {
+      context += "...";
+      break;
+    }
+
+    context += text[j];
   }
 
   std::cerr << context << std::endl;
 
-  std::string posMarker(exception.mark.column, ' ');
+  int spaceNumbers = (std::min)(exception.mark.column, maxContextSize + 3);
+  std::string posMarker(spaceNumbers, ' ');
   posMarker += colors::green("^");
-  posMarker += colors::green(std::string(10, '~'));
-  std::cerr << posMarker;
+  posMarker += colors::green(std::string(LINE_MAKER_SIZE, '~'));
+  std::cerr << posMarker << std::endl;
 }
 
 Node Load(const std::string& input, bool managed) {
