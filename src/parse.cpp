@@ -23,7 +23,7 @@
 
 namespace YAML {
 
-int GetConsoleWidth() {
+static int GetConsoleWidth() {
 #ifdef _WIN32
     CONSOLE_SCREEN_BUFFER_INFO csbi;
 #endif
@@ -49,8 +49,8 @@ int GetConsoleWidth() {
     return cols;
 }
 
-void ElegantErrorOutput(Exception &exception, Parser &parser) {
-  std::string text = parser.GetText();
+void Loader::ElegantErrorOutput(Exception &exception) {
+  std::string text = m_parser->GetText();
   int consoleWidth = GetConsoleWidth();
   int maxContextSize = consoleWidth - LINE_MAKER_SIZE - 5;
 
@@ -109,79 +109,65 @@ void ElegantErrorOutput(Exception &exception, Parser &parser) {
   std::cerr << posMarker << std::endl;
 }
 
-Node Load(const std::string& input, bool managed) {
-  std::stringstream stream(input);
-  return Load(stream, managed);
+Loader::Loader(bool textEnabled) : m_textEnabled(textEnabled),
+    m_parser(new Parser())
+{
 }
 
-Node Load(const char* input, bool managed) {
+Node Loader::Load(const std::string& input) {
   std::stringstream stream(input);
-  return Load(stream, managed);
+  return Load(stream);
 }
 
-Node Load(std::istream& input, bool managed) {
-  Parser parser;
+Node Loader::Load(const char* input) {
+  std::stringstream stream(input);
+  return Load(stream);
+}
 
-  try {
-    parser.Load(input, managed);
+Node Loader::Load(std::istream& input) {
+    m_parser->Load(input, m_textEnabled);
     NodeBuilder builder;
-    if (!parser.HandleNextDocument(builder))
-      return Node();
+    if (!m_parser->HandleNextDocument(builder))
+        return Node();
 
     return builder.Root();
-  } catch (Exception e) {
-    if (managed) {
-      ElegantErrorOutput(e, parser);
-    }
-
-    throw e;
-  }
 }
 
-Node LoadFile(const std::string& filename, bool managed) {
+Node Loader::LoadFile(const std::string& filename) {
   std::ifstream fin(filename.c_str());
   if (!fin)
     throw BadFile();
-  return Load(fin, managed);
+  return Load(fin);
 }
 
-std::vector<Node> LoadAll(const std::string& input, bool managed) {
+std::vector<Node> Loader::LoadAll(const std::string& input) {
   std::stringstream stream(input);
-  return LoadAll(stream, managed);
+  return LoadAll(stream);
 }
 
-std::vector<Node> LoadAll(const char* input, bool managed) {
+std::vector<Node> Loader::LoadAll(const char* input) {
   std::stringstream stream(input);
-  return LoadAll(stream, managed);
+  return LoadAll(stream);
 }
 
-std::vector<Node> LoadAll(std::istream& input, bool managed) {
-  std::vector<Node> docs;
+std::vector<Node> Loader::LoadAll(std::istream& input) {
+    std::vector<Node> docs;
+    m_parser->Load(input, m_textEnabled);
 
-  Parser parser(input, managed);
-
-  try{
     while (1) {
-      NodeBuilder builder;
-      if (!parser.HandleNextDocument(builder))
+        NodeBuilder builder;
+        if (!m_parser->HandleNextDocument(builder))
         break;
-      docs.push_back(builder.Root());
-    }
-  } catch (Exception e) {
-    if (managed) {
-      ElegantErrorOutput(e, parser);
+        docs.push_back(builder.Root());
     }
 
-    throw e;
-  }
-
-  return docs;
+    return docs;
 }
 
-std::vector<Node> LoadAllFromFile(const std::string& filename, bool managed) {
+std::vector<Node> Loader::LoadAllFromFile(const std::string& filename) {
   std::ifstream fin(filename.c_str());
   if (!fin)
     throw BadFile();
-  return LoadAll(fin, managed);
+  return LoadAll(fin);
 }
 }

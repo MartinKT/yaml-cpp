@@ -17,18 +17,26 @@
 
 namespace YAML {
 class Node;
+class Parser;
 
-void ElegantErrorOutput(Exception &exception, Parser &parser);
+struct YAML_CPP_API Loader {
+    bool m_textEnabled = false;
+    std::unique_ptr<Parser> m_parser;
 
-YAML_CPP_API Node Load(const std::string& input, bool elegant_output = false);
-YAML_CPP_API Node Load(const char* input, bool elegant_output = false);
-YAML_CPP_API Node Load(std::istream& input, bool elegant_output = false);
-YAML_CPP_API Node LoadFile(const std::string& filename, bool elegant_output = false);
+    Loader(bool textEnabled = false);
 
-YAML_CPP_API std::vector<Node> LoadAll(const std::string& input, bool elegant_output = false);
-YAML_CPP_API std::vector<Node> LoadAll(const char* input, bool elegant_output = false);
-YAML_CPP_API std::vector<Node> LoadAll(std::istream& input, bool elegant_output = false);
-YAML_CPP_API std::vector<Node> LoadAllFromFile(const std::string& filename, bool elegant_output = false);
+    void ElegantErrorOutput(Exception &exception);
+
+    Node Load(const std::string& input);
+    Node Load(const char* input);
+    Node Load(std::istream& input);
+    Node LoadFile(const std::string& filename);
+
+    std::vector<Node> LoadAll(const std::string& input);
+    std::vector<Node> LoadAll(const char* input);
+    std::vector<Node> LoadAll(std::istream& input);
+    std::vector<Node> LoadAllFromFile(const std::string& filename);
+};
 }
 
 #endif  // VALUE_PARSE_H_62B23520_7C8E_11DE_8A39_0800200C9A66
