@@ -19,6 +19,8 @@ namespace YAML {
 class Node;
 class Parser;
 
+void YAML_CPP_API ElegantErrorOutputText(Exception &exception, std::string &text);
+
 struct YAML_CPP_API Loader {
     bool m_textEnabled = false;
     std::unique_ptr<Parser> m_parser;

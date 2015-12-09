@@ -49,8 +49,7 @@ static int GetConsoleWidth() {
     return cols;
 }
 
-void Loader::ElegantErrorOutput(Exception &exception) {
-  std::string text = m_parser->GetText();
+void ElegantErrorOutputText(Exception &exception, std::string &text) {
   int consoleWidth = GetConsoleWidth();
   int maxContextSize = consoleWidth - LINE_MAKER_SIZE - 5;
 
@@ -107,6 +106,11 @@ void Loader::ElegantErrorOutput(Exception &exception) {
   posMarker += colors::green("^");
   posMarker += colors::green(std::string(LINE_MAKER_SIZE, '~'));
   std::cerr << posMarker << std::endl;
+}
+
+
+void Loader::ElegantErrorOutput(Exception &exception) {
+    ElegantErrorOutputText(exception, m_parser->GetText());
 }
 
 Loader::Loader(bool textEnabled) : m_textEnabled(textEnabled),
