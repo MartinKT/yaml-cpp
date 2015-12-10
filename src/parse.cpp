@@ -49,20 +49,26 @@ static int GetConsoleWidth() {
     return cols;
 }
 
-void ElegantErrorOutputText(Exception &exception, std::string &text) {
+void ElegantErrorOutputText(Exception &exception, std::string &context) {
+    Mark mark = exception.mark;
+    std::string msg = exception.msg;
+    ElegantErrorOutputText(mark, msg, context);
+}
+
+void ElegantErrorOutputText(Mark &mark, std::string &msg, std::string &text) {
   int consoleWidth = GetConsoleWidth();
   int maxContextSize = consoleWidth - LINE_MAKER_SIZE - 5;
 
   std::string errorMark;
   errorMark += colors::red("error").bold();
-  std::cerr << "[line "<< exception.mark.line + 1
-    << ", column " << exception.mark.column + 1 << "] "
-    << errorMark << ": " << exception.msg << std::endl;
+  std::cerr << "[line "<< mark.line + 1
+    << ", column " << mark.column + 1 << "] "
+    << errorMark << ": " << msg << std::endl;
 
   // Find the first element of that line. Unless it is too faraway.
-  int rpos = exception.mark.pos, actualLines = 1;
+  int rpos = mark.pos, actualLines = 1;
   for (int i = 0; i < maxContextSize; i++) {
-    rpos = exception.mark.pos - i;
+    rpos = mark.pos - i;
     if (rpos <= 0) break;
 
     if (text[rpos] == '\n') {
@@ -101,7 +107,7 @@ void ElegantErrorOutputText(Exception &exception, std::string &text) {
 
   std::cerr << context << std::endl;
 
-  int spaceNumbers = (std::min)(exception.mark.column, maxContextSize + 3);
+  int spaceNumbers = (std::min)(mark.column, maxContextSize + 3);
   std::string posMarker(spaceNumbers, ' ');
   posMarker += colors::green("^");
   posMarker += colors::green(std::string(LINE_MAKER_SIZE, '~'));
