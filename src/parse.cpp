@@ -16,7 +16,7 @@
 #ifdef _WIN32
 #include <Windows.h>
 #else
-#include <ioctl.h>
+#include <sys/ioctl.h>
 #endif
 
 #define LINE_MAKER_SIZE 10
@@ -28,7 +28,7 @@ static int GetConsoleWidth() {
     CONSOLE_SCREEN_BUFFER_INFO csbi;
 #endif
     int cols = 80;
-    int lines = 24;
+//    int lines = 24;
 
 #ifdef _WIN32
     GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
@@ -43,24 +43,24 @@ static int GetConsoleWidth() {
     struct winsize ts;
     ioctl(STDIN_FILENO, TIOCGWINSZ, &ts);
     cols = ts.ws_col;
-    lines = ts.ws_row;
+//    lines = ts.ws_row;
 #endif /* TIOCGSIZE */
 
     return cols;
 }
 
-void ElegantErrorOutputText(Exception &exception, std::string &context) {
+void ElegantErrorOutputText(Exception &exception, const std::string &context) {
     Mark mark = exception.mark;
     std::string msg = exception.msg;
     ElegantErrorOutputText(mark, msg, context);
 }
 
-void ElegantErrorOutputText(Mark &mark, std::string &msg, std::string &text) {
+void ElegantErrorOutputText(Mark &mark, std::string &msg, const std::string &text) {
   int consoleWidth = GetConsoleWidth();
   int maxContextSize = consoleWidth - LINE_MAKER_SIZE - 5;
 
   std::string errorMark;
-  errorMark += colors::red("error").bold();
+  errorMark << colors::red("error").bold();
   std::cerr << "[line "<< mark.line + 1
     << ", column " << mark.column + 1 << "] "
     << errorMark << ": " << msg << std::endl;
@@ -86,7 +86,7 @@ void ElegantErrorOutputText(Mark &mark, std::string &msg, std::string &text) {
   if (rpos > 0 && text[rpos - 1] != '\n')
     context += " ...";
 
-  for (int j = rpos, columnCount = 0, linesCount = 1; j < text.size(); j++) {
+  for (int j = rpos, columnCount = 0, linesCount = 1; j < (int)text.size(); j++) {
     if (text[j] == '\n'){
       columnCount = 0;
       linesCount++;
@@ -109,8 +109,8 @@ void ElegantErrorOutputText(Mark &mark, std::string &msg, std::string &text) {
 
   int spaceNumbers = (std::min)(mark.column, maxContextSize + 3);
   std::string posMarker(spaceNumbers, ' ');
-  posMarker += colors::green("^");
-  posMarker += colors::green(std::string(LINE_MAKER_SIZE, '~'));
+  posMarker << colors::green("^");
+  posMarker << colors::green(std::string(LINE_MAKER_SIZE, '~'));
   std::cerr << posMarker << std::endl;
 }
 

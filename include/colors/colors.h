@@ -254,7 +254,7 @@ namespace colors {
             ref = str;
         }
 
-        color(std::string &str) {
+        color(const std::string &str) {
             ref = str.c_str();
         }
 
@@ -487,7 +487,7 @@ namespace colors {
         color name(const char *_str = nullptr) { \
             return color(_str).name();           \
         }                                        \
-        color name(std::string &_str) {          \
+        color name(const std::string &_str) {          \
             return color(_str).name();           \
         }                    
 
@@ -517,7 +517,7 @@ namespace colors {
         static color name(const char *_str = nullptr) { \
             return color(_str).name();                  \
         }                                               \
-        static color name(std::string &_str) {          \
+        static color name(const std::string &_str) {          \
             return color(_str).name();                  \
         }                    
 

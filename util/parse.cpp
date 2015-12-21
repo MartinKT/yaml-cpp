@@ -39,7 +39,7 @@ class NullEventHandler : public YAML::EventHandler {
 
 void parse(std::istream& input) {
   try {
-    YAML::Node doc = YAML::Load(input);
+    YAML::Node doc = YAML::Loader().Load(input);
     std::cout << doc << "\n";
   } catch (const YAML::Exception& e) {
     std::cerr << e.what() << "\n";
